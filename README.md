@@ -285,7 +285,3 @@ Both sample predictions were highly confident and correct, with per-frame probab
 - Add data augmentation (random crops, flips, compression artifacts) to improve robustness to real-world video degradation.
 
 ---
-
-## License
-
-No license specified. Add a `LICENSE` file if you intend to distribute this project. Note that use of the FaceForensics++ dataset is subject to its own [terms of use](https://github.com/ondyari/FaceForensics), which typically restrict use to research purposes and require signing a usage agreement.
