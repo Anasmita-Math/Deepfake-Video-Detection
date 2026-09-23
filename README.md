@@ -208,6 +208,7 @@ The output classes are:
 
 0 → REAL
 1 → FAKE
+
 📊 Dataset
 
 The project uses the FaceForensics++ (FF++) dataset.
@@ -236,7 +237,6 @@ Ten face frames were extracted from each successfully processed video.
 ⚙️ Requirements
 
 The project requires:
-
 Python 3.11
 PyTorch
 Torchvision
@@ -248,7 +248,9 @@ Pillow
 All required packages are listed in:
 
 requirements.txt
+
 🚀 Installation
+
 1. Clone the repository
 git clone <YOUR-GITHUB-REPOSITORY-URL>
 cd Deepfake-Video-Detection
@@ -261,16 +263,13 @@ Linux / macOS
 source .venv/bin/activate
 4. Install dependencies
 pip install -r requirements.txt
+
 ▶️ Run the Streamlit Application
 
 Run:
-
 python -m streamlit run app.py
-
 The application will open in your browser.
-
 Usually:
-
 http://localhost:8501
 🧪 Using the Application
 Open the Streamlit application.
@@ -282,16 +281,12 @@ View:
 Final REAL/FAKE prediction
 Confidence score
 Frame-by-frame probabilities
+
 📈 Results
-
 The original training run reported the following validation result:
-
 Reported Validation Accuracy
-
 88.16%
-
 The original experiment used:
-
 200 REAL videos
 200 FAKE videos
 10 frames per video
@@ -304,7 +299,6 @@ Class	Precision	Recall	F1-score
 REAL	0.85	0.91	0.88
 FAKE	0.92	0.86	0.89
 Reported Overall Accuracy
-
 88.16%
 
 Note: The 88.16% figure is the result reported by the original training experiment. Performance on new or unseen real-world videos may differ.
