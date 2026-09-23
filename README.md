@@ -148,6 +148,7 @@ Example:
 
 Prediction: REAL
 Confidence: 80.19%
+
 🖥️ Streamlit Application
 
 The project includes an interactive Streamlit interface.
@@ -346,6 +347,7 @@ Performance may vary for videos from different datasets, cameras, compression le
 The displayed confidence represents the model's prediction probability and should not be treated as absolute proof that a video is real or fake.
 
 🔮 Future Improvements
+
 Fine-tune deeper ResNeXt101 layers
 Add stronger data augmentation
 Use more training videos
@@ -356,8 +358,10 @@ Use a proper video-level train/validation/test split
 Apply learning-rate scheduling
 Improve robustness against video compression
 Evaluate on completely unseen datasets
-Add explainability and visualization for suspicious facial regions
+Add explainability and visualization for suspicious facial regions 
+
 🛠️ Technologies Used
+
 Python
 PyTorch
 Torchvision
@@ -369,6 +373,7 @@ Jupyter Notebook
 FaceForensics++
 
 📌 Workflow
+
 Video Upload
      ↓
 Frame Sampling
