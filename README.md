@@ -391,7 +391,6 @@ Confidence + Frame Analysis
 📄 Disclaimer
 
 This project is an experimental deepfake detection system developed for educational and research purposes.
-
 Predictions may contain errors, particularly for videos that differ significantly from the training data. The output should not be treated as definitive evidence of whether a video is authentic or manipulated.
 
 📜 License
