@@ -1,287 +1,399 @@
-# Deepfake Video Detection with ResNeXt101 + PyTorch
+# 🎭 Deepfake Video Detection with ResNeXt101 + PyTorch
 
-A face-level deepfake classifier that extracts faces from video frames and uses a fine-tuned **ResNeXt101 (32x8d)** CNN to classify each face as **REAL** or **FAKE**. Per-frame predictions are aggregated to produce a single video-level verdict with a confidence score.
+A deepfake video detection system built using **ResNeXt101** and **PyTorch** that analyzes faces extracted from video frames and classifies them as **REAL** or **FAKE**.
 
-Trained and evaluated on the **FaceForensics++ (FF++)** dataset.
+The project includes an interactive **Streamlit web application** where users can upload a video, preview it, run deepfake detection, and view the final prediction, confidence score, and frame-by-frame REAL/FAKE probabilities.
 
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [How It Works](#how-it-works)
-- [Project Structure](#project-structure)
-- [Requirements](#requirements)
-- [Dataset](#dataset)
-- [Setup](#setup)
-- [Usage](#usage)
-  - [1. Face Extraction](#1-face-extraction)
-  - [2. Data Preparation](#2-data-preparation)
-  - [3. Model Architecture](#3-model-architecture)
-  - [4. Training](#4-training)
-  - [5. Evaluation](#5-evaluation)
-  - [6. Video-Level Inference](#6-video-level-inference)
-- [Results](#results)
-- [Known Issues / Gaps](#known-issues--gaps)
-- [Suggested Improvements](#suggested-improvements)
-- [License](#license)
+The model was trained and evaluated using the **FaceForensics++ (FF++)** dataset.
 
 ---
 
-## Overview
+## 📌 Features
 
-This project tackles deepfake detection as an **image classification problem applied to video**:
-
-1. Faces are detected and cropped from sampled frames of each video using OpenCV's Haar Cascade face detector.
-2. Each cropped face is classified independently by a ResNeXt101-based binary classifier (REAL vs. FAKE).
-3. Frame-level probabilities are averaged/aggregated to produce a final video-level label and confidence score.
-
-The notebook (`deep-fake-video-5-resnext101.ipynb`) was originally built and run as a **Kaggle notebook** with GPU acceleration and the FaceForensics++ dataset mounted as a Kaggle input.
-
----
-
-## How It Works
-
-```
-Video File
-   │
-   ▼
-[Frame Sampling]  ── sample N evenly-spaced frames (default: 10)
-   │
-   ▼
-[Face Detection]  ── Haar Cascade (frontal face), largest detected face kept
-   │
-   ▼
-[Face Crop + Resize]  ── resized to 128x128
-   │
-   ▼
-[Preprocessing]  ── ToTensor + ImageNet normalization
-   │
-   ▼
-[ResNeXt101 32x8d]  ── pretrained backbone (frozen) + custom FC head
-   │
-   ▼
-[Per-frame REAL/FAKE probabilities]
-   │
-   ▼
-[Aggregation]  ── average across frames
-   │
-   ▼
-Final Prediction (REAL / FAKE) + Confidence
-```
+- 🎥 Upload videos through a Streamlit web interface
+- 👤 Detect faces from sampled video frames using OpenCV Haar Cascade
+- 🧠 Classify detected faces using ResNeXt101
+- 🔍 Predict whether a video is REAL or FAKE
+- 📊 Display prediction confidence
+- 📈 Display frame-by-frame REAL/FAKE probabilities
+- ⚡ Automatically use GPU when CUDA is available
+- 💻 Supports CPU inference
+- 🎬 Supports MP4, AVI, MOV, and MKV formats
+- 🧹 Automatically handles temporary uploaded video files
 
 ---
 
-## Project Structure
+## 🏗️ Project Architecture
 
-```
-.
-├── deep-fake-video-5-resnext101.ipynb   # Main notebook (training + evaluation + inference)
-├── resnext101_deepfake_faces.pth        # Saved model weights (generated after training)
-├── faces_tmp/                           # Temporary directory of extracted face crops (generated)
-└── README.md
-```
+```text
+                    Input Video
+                        │
+                        ▼
+              ┌───────────────────┐
+              │  Frame Sampling   │
+              │   10 Frames       │
+              └─────────┬─────────┘
+                        │
+                        ▼
+              ┌───────────────────┐
+              │   Face Detection  │
+              │   Haar Cascade    │
+              └─────────┬─────────┘
+                        │
+                        ▼
+              ┌───────────────────┐
+              │ Face Crop + Resize│
+              │     128 × 128     │
+              └─────────┬─────────┘
+                        │
+                        ▼
+              ┌───────────────────┐
+              │   Preprocessing   │
+              │ Tensor + Normalize│
+              └─────────┬─────────┘
+                        │
+                        ▼
+              ┌───────────────────┐
+              │    ResNeXt101     │
+              │      32x8d        │
+              └─────────┬─────────┘
+                        │
+                        ▼
+             REAL / FAKE Probability
+                        │
+                        ▼
+              ┌───────────────────┐
+              │ Frame Aggregation │
+              └─────────┬─────────┘
+                        │
+                        ▼
+             Final Video Prediction
+              REAL / FAKE + Confidence
+📁 Project Structure
+Deepfake-Video-Detection/
+│
+├── app.py
+│   └── Streamlit web application for deepfake detection
+│
+├── deep-fake-video-5-resnext101.ipynb
+│   └── Model training, evaluation, and inference notebook
+│
+├── requirements.txt
+│   └── Python dependencies
+│
+├── .gitignore
+│   └── Files excluded from GitHub
+│
+├── README.md
+│   └── Project documentation
+│
+└── resnext101_deepfake_faces.pth
+    └── Trained model weights
 
----
+Note: The trained .pth model file is approximately 336 MB and is excluded from normal GitHub commits using .gitignore.
 
-## Requirements
+🧠 How the Model Works
 
-- Python 3.11 (as used in the original Kaggle environment)
-- GPU strongly recommended (CUDA)
+The project treats deepfake detection as a face-level image classification problem applied to video.
 
-### Python packages
+Step 1 — Video Input
 
-```
-torch
-torchvision
-opencv-python
-numpy
-scikit-learn
-tqdm
-matplotlib
-seaborn
-```
+The user uploads a video through the Streamlit interface.
 
-Install with:
+Supported formats:
 
-```bash
-pip install torch torchvision opencv-python numpy scikit-learn tqdm matplotlib seaborn
-```
+MP4
+AVI
+MOV
+MKV
+Step 2 — Frame Sampling
 
-> **Note:** OpenCV must be built with the `data` submodule available (`cv2.data.haarcascades`), which the standard `opencv-python` package provides.
+The application samples 10 evenly spaced frames from the uploaded video.
 
----
+Step 3 — Face Detection
 
-## Dataset
+OpenCV's Haar Cascade frontal-face detector is used to locate faces.
 
-The notebook uses the **FaceForensics++ (FF++)** dataset, expected in the following structure (as mounted in the original Kaggle environment):
+The largest detected face from each sampled frame is selected.
 
-```
-/kaggle/input/faceforensics/FF++/
-├── real/    # real videos (.mp4)
-└── fake/    # fake / manipulated videos (.mp4)
-```
+Step 4 — Face Preprocessing
 
-To run this outside Kaggle, download FaceForensics++ (requires requesting access from the dataset authors) and update the paths:
+Each detected face is:
 
-```python
-REAL_VID_DIR = "/path/to/FF++/real"
-FAKE_VID_DIR = "/path/to/FF++/fake"
-```
+Cropped
+Resized to 128 × 128
+Converted to a PyTorch tensor
+Normalized using ImageNet normalization
+Step 5 — ResNeXt101 Classification
 
-The notebook uses only the **first 200 videos** from each class (`os.listdir(vid_dir)[:200]`) to keep preprocessing time manageable.
+The processed face is passed through:
 
----
+ResNeXt101 32x8d
 
-## Setup
+The classifier produces two classes:
 
-1. Clone/download this repository and place the notebook in your working directory.
-2. Install the dependencies listed above.
-3. Update `REAL_VID_DIR` and `FAKE_VID_DIR` to point to your local copy of FaceForensics++.
-4. Launch Jupyter and run the notebook cells sequentially:
+REAL
+FAKE
+Step 6 — Frame-Level Prediction
 
-```bash
-jupyter notebook deep-fake-video-5-resnext101.ipynb
-```
+For every analyzed frame, the application calculates:
 
----
+REAL probability
+FAKE probability
+Step 7 — Video-Level Prediction
 
-## Usage
+The frame-level probabilities are aggregated to produce the final video prediction and confidence score.
 
-### 1. Face Extraction
+Example:
 
-`extract_faces_from_video()` samples `frame_count` (default 10) evenly-spaced frames from a video, runs Haar Cascade face detection, keeps the **largest** detected face per frame, and resizes it to `128x128`.
+Prediction: REAL
+Confidence: 80.19%
+🖥️ Streamlit Application
 
-```python
-faces = extract_faces_from_video(
-    video_path="path/to/video.mp4",
-    frame_count=10,
-    output_size=(128, 128)
+The project includes an interactive Streamlit interface.
+
+Video Upload
+
+Users can upload a supported video file.
+
+Video Preview
+
+The uploaded video can be previewed directly inside the application.
+
+Deepfake Detection
+
+Click:
+
+🔍 Detect Deepfake
+
+to start the analysis.
+
+Final Prediction
+
+The application displays:
+
+REAL
+
+or
+
+FAKE
+
+along with a confidence score.
+
+Frame-by-Frame Analysis
+
+The application also displays REAL and FAKE probabilities for each analyzed frame.
+
+🧱 Model Architecture
+
+The model uses:
+
+ResNeXt101 32x8d
+
+as the CNN backbone.
+
+The original training configuration used a pretrained ImageNet ResNeXt101 model with a custom binary classification head.
+
+The classifier head consists of:
+
+nn.Sequential(
+    nn.Linear(model.fc.in_features, 512),
+    nn.ReLU(),
+    nn.Dropout(0.3),
+    nn.Linear(512, 2)
 )
-```
 
-Videos where face detection fails to find faces in all 10 sampled frames are **skipped** from the training set.
+The output classes are:
 
-### 2. Data Preparation
+0 → REAL
+1 → FAKE
+📊 Dataset
 
-For each video in `real/` and `fake/`:
-- Extracted faces are saved as individual `.jpg` files to `./faces_tmp/`, named `{label}_{video_filename}_{frame_idx}.jpg`.
-- Labels: `0 = REAL`, `1 = FAKE`.
-- The resulting list of face-image file paths and labels is split into train/validation sets (80/20, stratified) using `train_test_split`.
+The project uses the FaceForensics++ (FF++) dataset.
 
-### 3. Model Architecture
+The expected dataset structure is:
 
-- **Backbone:** `torchvision.models.resnext101_32x8d`, pretrained on ImageNet, with all backbone layers **frozen** (`requires_grad = False`).
-- **Classifier head** (trainable):
-  ```python
-  nn.Sequential(
-      nn.Linear(model.fc.in_features, 512),
-      nn.ReLU(),
-      nn.Dropout(0.3),
-      nn.Linear(512, 2)
-  )
-  ```
-- Output: 2 logits corresponding to `[REAL, FAKE]`.
+FF++/
+│
+├── real/
+│   ├── video1.mp4
+│   ├── video2.mp4
+│   └── ...
+│
+└── fake/
+    ├── video1.mp4
+    ├── video2.mp4
+    └── ...
 
-### 4. Training
+The training experiment used:
 
-```python
-train(model, train_loader, val_loader, epochs=40)
-```
+200 REAL videos
+200 FAKE videos
 
-- **Loss:** `CrossEntropyLoss`
-- **Optimizer:** `Adam`, `lr=1e-4`, applied only to the classifier head (`model.fc.parameters()`)
-- **Batch size:** 32
-- Only the final FC head is trained (transfer learning with a frozen backbone), which makes training fast even without fine-tuning the full network.
+Ten face frames were extracted from each successfully processed video.
 
-After training:
+⚙️ Requirements
 
-```python
-torch.save(model.state_dict(), "resnext101_deepfake_faces.pth")
-```
+The project requires:
 
-### 5. Evaluation
+Python 3.11
+PyTorch
+Torchvision
+Streamlit
+OpenCV
+NumPy
+Pillow
 
-The notebook reloads the saved weights and evaluates on the held-out validation split (`X_val`, `y_val`), producing:
-- Overall accuracy
-- Per-class precision / recall / F1 (`classification_report`)
-- Confusion matrix (visualized with `seaborn.heatmap`)
+All required packages are listed in:
 
-### 6. Video-Level Inference
+requirements.txt
+🚀 Installation
+1. Clone the repository
+git clone <YOUR-GITHUB-REPOSITORY-URL>
+cd Deepfake-Video-Detection
+2. Create a virtual environment
+python -m venv .venv
+3. Activate the environment
+Windows
+.venv\Scripts\activate
+Linux / macOS
+source .venv/bin/activate
+4. Install dependencies
+pip install -r requirements.txt
+▶️ Run the Streamlit Application
 
-The notebook calls a `predict_video()` function to classify a full video:
+Run:
 
-```python
-label, confidence, details = predict_video(
-    sample_path,
-    model,
-    transform,
-    device,
-    frame_count=10,
-    return_details=True
-)
-```
+python -m streamlit run app.py
 
-It returns:
-- `label`: `"REAL"` or `"FAKE"`
-- `confidence`: aggregated confidence score
-- `details`: dict containing per-frame `real_probs` and `fake_probs`
+The application will open in your browser.
 
-> ⚠️ **This function is referenced but not defined anywhere in the notebook** — see [Known Issues](#known-issues--gaps) below.
+Usually:
 
----
+http://localhost:8501
+🧪 Using the Application
+Open the Streamlit application.
+Upload a video.
+Preview the uploaded video.
+Click 🔍 Detect Deepfake.
+Wait for the analysis to finish.
+View:
+Final REAL/FAKE prediction
+Confidence score
+Frame-by-frame probabilities
+📈 Results
 
-## Results
+The original training run reported the following validation result:
 
-Results below are from the run captured in the notebook (200 real + 200 fake videos, 10 frames each, 40 epochs, backbone frozen):
+Reported Validation Accuracy
 
-### Training (final epochs)
+88.16%
 
-| Epoch | Train Loss | Train Acc | Val Loss | Val Acc |
-|------:|-----------:|----------:|---------:|--------:|
-| 32    | 0.132      | 94.82%    | 0.297    | **90.13%** |
-| 35    | 0.124      | 95.52%    | 0.309    | 88.98%  |
-| 40    | 0.129      | 94.61%    | 0.309    | 88.16%  |
+The original experiment used:
 
-### Held-out Test Evaluation (Cell 9)
+200 REAL videos
+200 FAKE videos
+10 frames per video
+ResNeXt101 32x8d
+40 training epochs
+Frozen ResNeXt101 backbone
+Custom classification head
+Reported Class Metrics
+Class	Precision	Recall	F1-score
+REAL	0.85	0.91	0.88
+FAKE	0.92	0.86	0.89
+Reported Overall Accuracy
 
-**Test Accuracy: 88.16%**
+88.16%
 
-| Class | Precision | Recall | F1-score | Support |
-|-------|-----------|--------|----------|---------|
-| REAL  | 0.85      | 0.91   | 0.88     | 282     |
-| FAKE  | 0.92      | 0.86   | 0.89     | 326     |
-| **Accuracy** |    |        | **0.88** | 608     |
+Note: The 88.16% figure is the result reported by the original training experiment. Performance on new or unseen real-world videos may differ.
 
-### Sample Video-Level Predictions
+🎯 Sample Video-Level Predictions
+Video	True Label	Predicted	Confidence
+01_02__outside_talking_still_laughing__YVGY8LOK.mp4	FAKE	FAKE	0.98
+01__podium_speech_happy.mp4	REAL	REAL	0.97
+⚠️ Limitations
+1. Limited Dataset
 
-| Video | True Label | Predicted | Confidence |
-|-------|-----------|-----------|------------|
-| `01_02__outside_talking_still_laughing__YVGY8LOK.mp4` | FAKE | FAKE | 0.98 |
-| `01__podium_speech_happy.mp4` | REAL | REAL | 0.97 |
+The experiment uses only:
 
-Both sample predictions were highly confident and correct, with per-frame probabilities consistently aligned with the video-level label.
+200 REAL + 200 FAKE
 
----
+The model may not generalize perfectly to all deepfake generation techniques.
 
-## Limitations
+2. Haar Cascade Face Detection
 
-- **`predict_video()` is undefined.** Cells 10 and 11 call this function to run video-level inference, but it is never implemented in the notebook. To reproduce this part, you'll need to write it yourself — logically it should: (1) call `extract_faces_from_video`, (2) apply `transform` to each face and batch them, (3) run the model to get per-frame softmax probabilities, (4) average frame probabilities to get a final label/confidence, and (5) return `(label, confidence, details)` where `details` includes `real_probs` and `fake_probs` lists.
-- **Small dataset subset.** Only the first 200 videos per class are used (`[:200]`), which is a small fraction of full FaceForensics++. Results may not generalize to the full dataset or to other deepfake generation methods.
-- **Evaluation reuses the validation split as the "test" set.** Cell 9 explicitly reuses `X_val`/`y_val` rather than a held-out test split, so the reported 88.16% test accuracy is technically validation accuracy, not accuracy on unseen data.
-- **Face detector is a Haar Cascade**, which is fast but less robust than modern deep-learning face detectors (e.g. MTCNN, RetinaFace), especially for occluded faces, extreme poses, or low-resolution video.
-- **Frame-level, not identity/temporal aware.** Faces are classified independently per frame; the model does not use temporal information across frames (e.g. via an RNN/3D-CNN) and does not track a single identity across the video.
-- **Class imbalance in confusion matrix.** Support differs between REAL (282) and FAKE (326) in the evaluation split.
+The application uses OpenCV Haar Cascade for face detection.
 
----
+It may be less robust for:
 
-## Future Work
+Extreme poses
+Occlusions
+Low-resolution videos
+Poor lighting
+3. Frame-Based Classification
 
-- Fine-tune deeper layers of ResNeXt101 (currently fully frozen except the FC head) for better feature adaptation.
-- Replace Haar Cascade with a deep learning-based face detector (MTCNN / RetinaFace / MediaPipe) for more robust face localization.
-- Use a true held-out test set, separate from the validation set used for model selection.
-- Incorporate temporal modeling (e.g., LSTM/GRU or 3D-CNN over frame sequences) instead of independent per-frame classification.
-- Train on the full FaceForensics++ dataset (or additional datasets like DFDC, Celeb-DF) for better generalization.
-- Add data augmentation (random crops, flips, compression artifacts) to improve robustness to real-world video degradation.
+The current system classifies sampled faces independently.
 
----
+It does not explicitly model temporal information between consecutive frames.
+
+4. Real-World Generalization
+
+Performance may vary for videos from different datasets, cameras, compression levels, or deepfake generation methods.
+
+5. Model Confidence
+
+The displayed confidence represents the model's prediction probability and should not be treated as absolute proof that a video is real or fake.
+
+🔮 Future Improvements
+Fine-tune deeper ResNeXt101 layers
+Add stronger data augmentation
+Use more training videos
+Use a larger and more diverse dataset
+Replace Haar Cascade with RetinaFace, MTCNN, or another modern face detector
+Introduce temporal modeling
+Use a proper video-level train/validation/test split
+Apply learning-rate scheduling
+Improve robustness against video compression
+Evaluate on completely unseen datasets
+Add explainability and visualization for suspicious facial regions
+🛠️ Technologies Used
+Python
+PyTorch
+Torchvision
+ResNeXt101
+OpenCV
+NumPy
+Streamlit
+Jupyter Notebook
+FaceForensics++
+📌 Workflow
+Video Upload
+     ↓
+Frame Sampling
+     ↓
+Face Detection
+     ↓
+Face Cropping
+     ↓
+Image Preprocessing
+     ↓
+ResNeXt101
+     ↓
+REAL / FAKE Probabilities
+     ↓
+Frame Aggregation
+     ↓
+Final Video Prediction
+     ↓
+Confidence + Frame Analysis
+
+📄 Disclaimer
+
+This project is an experimental deepfake detection system developed for educational and research purposes.
+
+Predictions may contain errors, particularly for videos that differ significantly from the training data. The output should not be treated as definitive evidence of whether a video is authentic or manipulated.
+
+📜 License
+
+This project is intended for educational and research purposes.
