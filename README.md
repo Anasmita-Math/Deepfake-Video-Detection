@@ -388,6 +388,17 @@ Final Video Prediction
      ↓
 Confidence + Frame Analysis
 
+## 🖥️ Application Demo
+
+### Real Video Upload
+![Real Video Upload](screenshots/deepfake1.jpg)
+
+### Prediction Result
+![Prediction Result](screenshots/deepfake2.jpg)
+
+### Frame-by-Frame Analysis
+![Frame-by-Frame Analysis](screenshots/deepfake3.jpg)
+
 📄 Disclaimer
 
 This project is an experimental deepfake detection system developed for educational and research purposes.
